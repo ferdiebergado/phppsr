@@ -1,6 +1,6 @@
 <?php declare (strict_types = 1);
 /**
- * php-psr - A PHP API Application Skeleton using PSR-Compliant Packages
+ * php-psr - A fast PHP API framework using the Middleware Approach with PSR-Compliant Components
  *
  * @package  php-psr
  * @author   Ferdinand Saporas Bergado <ferdiebergado@gmail.com>
@@ -36,24 +36,39 @@ define('VENDOR_PATH', BASE_PATH . 'vendor' . DS);
 
 include_once VENDOR_PATH . "autoload.php";
 
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message \{
+    ResponseInterface,
+        ServerRequestInterface
+};
 use WoohooLabs\Harmony\Harmony;
-use WoohooLabs\Harmony\Middleware\DispatcherMiddleware;
-use WoohooLabs\Harmony\Middleware\FastRouteMiddleware;
-use WoohooLabs\Harmony\Middleware\HttpHandlerRunnerMiddleware;
-
-use Zend\Diactoros\Response;
-use Zend\Diactoros\ServerRequestFactory;
-
+use WoohooLabs\Harmony\Middleware \{
+    DispatcherMiddleware,
+        FastRouteMiddleware,
+        HttpHandlerRunnerMiddleware
+};
 use Zend\HttpHandlerRunner\Emitter\SapiEmitter;
 use Core\Container\Container;
-use App\Controller\HomeController;
-use App\Controller\UserController;
+use App\Controller \{
+    HomeController,
+        UserController
+};
+use Nyholm\Psr7\Factory\Psr17Factory;
+use Nyholm\Psr7Server\ServerRequestCreator;
+use Middlewares\Cors;
+use Neomerx\Cors\Strategies\Settings;
+use Neomerx\Cors\Analyzer;
 
-/* Initialize the request and the response objects */
-$request = ServerRequestFactory::fromGlobals();
-$response = new Response();
+$psr17Factory = new Psr17Factory();
+
+$creator = new ServerRequestCreator(
+    $psr17Factory, // ServerRequestFactory
+    $psr17Factory, // UriFactory
+    $psr17Factory, // UploadedFileFactory
+    $psr17Factory  // StreamFactory
+);
+
+$serverRequest = $creator->fromGlobals();
+$response = (new Psr17Factory())->createResponse();
 
 /* Initialize the router */
 $router = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) {
@@ -61,10 +76,21 @@ $router = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) {
     $r->addRoute("GET", '/users/{id}', [UserController::class, 'show']);
 });
 
+/* Initialize Cors */
+$settings = new Settings();
+$settings->setServerOrigin([
+    // 'scheme' => 'http',
+    'host' => 'localhost',
+    // 'port' => 3000,
+]);
+
+$analyzer = Analyzer::instance($settings);
+
 /* Stack the middleware */
-$harmony = new Harmony(ServerRequestFactory::fromGlobals(), new Response());
+$harmony = new Harmony($serverRequest, $response);
 $container = new Container();
 $harmony
+    ->addMiddleware(new Cors($analyzer))
     ->addMiddleware(new HttpHandlerRunnerMiddleware(new SapiEmitter()))
     ->addMiddleware(new FastRouteMiddleware($router))
     ->addMiddleware(new DispatcherMiddleware($container));

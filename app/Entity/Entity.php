@@ -7,13 +7,10 @@ use ParagonIE\EasyDB\Factory;
 
 class Entity implements EntityInterface
 {
+    const PREFIX = "App\\Entity\\";
     protected static $db;
-
     protected static $table;
-
-    protected static $namespace = "App\\Entity\\";
-
-    protected static $guarded = [];
+    protected static $guarded;
 
     public function __construct()
     {
@@ -30,7 +27,7 @@ class Entity implements EntityInterface
 
     protected function setTable()
     {
-        self::$table = strtolower(str_replace(self::$namespace, '', (\get_class($this)))) . 's';
+        self::$table = strtolower(str_replace(self::PREFIX, '', (\get_class($this)))) . 's';
     }
 
     protected function db()
