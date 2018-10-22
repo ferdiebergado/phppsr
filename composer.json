@@ -1,0 +1,41 @@
+{
+    "name": "d0np0br3/php-psr",
+    "description": "A PSR-compliant php api application skeleton",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ferdinand Saporas Bergado",
+            "email": "ferdiebergado@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Core\\": "core\\",
+            "App\\": "app\\"
+        },
+        "files": [
+            "core/helpers.php"
+        ]
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "security-checker security:check ./composer.lock"
+        ]
+    },
+    "config": {
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "optimize-autoloader": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "nikic/fast-route": "^2.0@dev",
+        "paragonie/easydb": "^2.7",
+        "woohoolabs/harmony": "dev-master",
+        "woohoolabs/zen": "dev-master",
+        "zendframework/zend-diactoros": "^2.0@dev",
+        "zendframework/zend-httphandlerrunner": "^1.0@dev"
+    }
+}
