@@ -1,15 +1,20 @@
-<?php
-declare (strict_types = 1);
+<?php declare (strict_types = 1);
 
 namespace App\Controller;
 
-use App\Service\AuthenticationService;
+use ParagonIE\EasyDB\Factory;
+use ParagonIE\EasyDB\EasyDB;
+use Core\Database;
 
 abstract class AbstractController implements ControllerInterface
 {
     /**
-     * @Inject
-     * @var AuthenticationService
+     * @var Database
      */
-    protected $authenticationService;
+    protected $db;
+
+    public function __construct(Database $db)
+    {
+        $this->db = $db;
+    }
 }

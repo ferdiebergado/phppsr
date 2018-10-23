@@ -8,8 +8,6 @@ use WoohooLabs\Zen\Config\EntryPoint\WildcardEntryPoint;
 use WoohooLabs\Zen\Config\Hint\DefinitionHint;
 use WoohooLabs\Zen\Config\Hint\WildcardHint;
 use WoohooLabs\Zen\Config\EntryPoint\ClassEntryPoint;
-use App\Entity\Entity;
-use Core\Database\Database;
 
 class ContainerConfig extends AbstractContainerConfig
 {
@@ -17,7 +15,7 @@ class ContainerConfig extends AbstractContainerConfig
     {
         return [
             new WildcardEntryPoint(__DIR__ . "/../../app/Controller"),
-            new ClassEntryPoint(Entity::class)
+            // new ClassEntryPoint(Database::class)
         ];
     }
 

@@ -33,6 +33,8 @@ define('DS', DIRECTORY_SEPARATOR);
 define('BASE_PATH', __DIR__ . DS . '..' . DS);
 define('CONFIG_PATH', BASE_PATH . 'config' . DS);
 define('VENDOR_PATH', BASE_PATH . 'vendor' . DS);
+define('DATE_FORMAT_SHORT', 'Y-m-d h:i:s');
+define('DATE_FORMAT_LONG', 'Y-m-d h:i:s A e');
 
 include_once VENDOR_PATH . "autoload.php";
 
@@ -50,13 +52,17 @@ use Zend\HttpHandlerRunner\Emitter\SapiEmitter;
 use Core\Container\Container;
 use App\Controller \{
     HomeController,
-        UserController
+        UserController,
+        AuthController
 };
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7Server\ServerRequestCreator;
 use Middlewares\Cors;
 use Neomerx\Cors\Strategies\Settings;
 use Neomerx\Cors\Analyzer;
+use Tuupola\Middleware\JwtAuthentication;
+use WoohooLabs\Harmony\Condition\PathPrefixCondition;
+use Core\Middleware\Auth\AuthenticationMiddleware;
 
 $psr17Factory = new Psr17Factory();
 
@@ -73,27 +79,41 @@ $response = (new Psr17Factory())->createResponse();
 /* Initialize the router */
 $router = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) {
     $r->addRoute("GET", '/', [HomeController::class, 'index']);
+    $r->addRoute("POST", '/auth/login', [AuthController::class, 'login']);
     $r->addRoute("GET", '/users/{id}', [UserController::class, 'show']);
+    $r->addRoute("GET", '/auth/me', [UserController::class, 'me']);
+    $r->addRoute("GET", '/debug', [HomeController::class, 'debug']);
 });
 
 /* Initialize Cors */
 $settings = new Settings();
-$settings->setServerOrigin([
-    // 'scheme' => 'http',
-    'host' => 'localhost',
-    // 'port' => 3000,
-]);
+// $settings->setServerOrigin([
+//     // 'scheme' => 'http',
+//     // 'host' => 'localhost',
+//     // 'port' => 3000,
+// ]);
 
 $analyzer = Analyzer::instance($settings);
+
+/* Load environment variables */
+$dotenv = new Dotenv\Dotenv(BASE_PATH);
+$dotenv->load();
 
 /* Stack the middleware */
 $harmony = new Harmony($serverRequest, $response);
 $container = new Container();
+
 $harmony
-    ->addMiddleware(new Cors($analyzer))
     ->addMiddleware(new HttpHandlerRunnerMiddleware(new SapiEmitter()))
     ->addMiddleware(new FastRouteMiddleware($router))
-    ->addMiddleware(new DispatcherMiddleware($container));
-
+    ->addMiddleware(new DispatcherMiddleware($container))
+    ->addMiddleware(new Cors($analyzer))
+    ->addMiddleware(new AuthenticationMiddleware((new Psr17Factory())->createResponse()));
+    // ->addCondition(
+    //     new PathPrefixCondition(['/users']),
+    //     function (Harmony $harmony) use ($response) {
+    //     }
+    // );
 /* Run! */
 $harmony();
+    

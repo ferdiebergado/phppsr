@@ -13,7 +13,7 @@ class Container extends AbstractCompiledContainer
         \Psr\Container\ContainerInterface::class => 'Psr__Container__ContainerInterface',
         \App\Controller\HomeController::class => '_proxy__App__Controller__HomeController',
         \App\Controller\UserController::class => '_proxy__App__Controller__UserController',
-        \App\Entity\Entity::class => '_proxy__App__Entity__Entity',
+        \App\Controller\AuthController::class => '_proxy__App__Controller__AuthController',
     ];
 
     /**
@@ -37,8 +37,7 @@ class Container extends AbstractCompiledContainer
 
     public function _proxy__App__Controller__UserController()
     {
-        include_once $this->rootDirectory . '/srv/http/php-psr/app/Entity/User.php';
-        include_once $this->rootDirectory . '/srv/http/php-psr/app/Service/UserService.php';
+        include_once $this->rootDirectory . '/srv/http/php-psr/core/Database.php';
         include_once $this->rootDirectory . '/srv/http/php-psr/app/Controller/UserController.php';
 
         self::$entryPoints[\App\Controller\UserController::class] = 'App__Controller__UserController';
@@ -46,13 +45,14 @@ class Container extends AbstractCompiledContainer
         return $this->App__Controller__UserController();
     }
 
-    public function _proxy__App__Entity__Entity()
+    public function _proxy__App__Controller__AuthController()
     {
-        include_once $this->rootDirectory . '/srv/http/php-psr/app/Entity/Entity.php';
+        include_once $this->rootDirectory . '/srv/http/php-psr/core/Database.php';
+        include_once $this->rootDirectory . '/srv/http/php-psr/app/Controller/AuthController.php';
 
-        self::$entryPoints[\App\Entity\Entity::class] = 'App__Entity__Entity';
+        self::$entryPoints[\App\Controller\AuthController::class] = 'App__Controller__AuthController';
 
-        return $this->App__Entity__Entity();
+        return $this->App__Controller__AuthController();
     }
 
     public function Core__Container__Container()
@@ -72,35 +72,20 @@ class Container extends AbstractCompiledContainer
 
     public function App__Controller__UserController()
     {
-        $entry = new \App\Controller\UserController();
-        $this->setProperties(
-            $entry,
-            [
-                'service' => $this->singletonEntries['App\Service\UserService'] ?? $this->App__Service__UserService(),
-            ]
+        return $this->singletonEntries['App\Controller\UserController'] = new \App\Controller\UserController(
+            $this->singletonEntries['Core\Database'] ?? $this->Core__Database()
         );
-        return $this->singletonEntries['App\Controller\UserController'] = $entry;
     }
 
-    public function App__Service__UserService()
+    public function Core__Database()
     {
-        $entry = new \App\Service\UserService();
-        $this->setProperties(
-            $entry,
-            [
-                'user' => $this->singletonEntries['App\Entity\User'] ?? $this->App__Entity__User(),
-            ]
+        return $this->singletonEntries['Core\Database'] = new \Core\Database();
+    }
+
+    public function App__Controller__AuthController()
+    {
+        return $this->singletonEntries['App\Controller\AuthController'] = new \App\Controller\AuthController(
+            $this->singletonEntries['Core\Database'] ?? $this->Core__Database()
         );
-        return $this->singletonEntries['App\Service\UserService'] = $entry;
-    }
-
-    public function App__Entity__User()
-    {
-        return $this->singletonEntries['App\Entity\User'] = new \App\Entity\User();
-    }
-
-    public function App__Entity__Entity()
-    {
-        return $this->singletonEntries['App\Entity\Entity'] = new \App\Entity\Entity();
     }
 }

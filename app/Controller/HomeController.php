@@ -15,4 +15,14 @@ class HomeController
         $response->getBody()->write(json_encode($data));
         return $response;
     }
+
+    public function debug(ServerRequestInterface $request, ResponseInterface $response) : ResponseInterface
+    {
+        $data = [
+            'server' => $request->getServerParams(),
+            'secret' => getenv("JWT_SECRET")
+        ];
+        $response->getBody()->write(json_encode($data));
+        return $response;
+    }
 }

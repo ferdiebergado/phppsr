@@ -6,6 +6,7 @@ CREATE TABLE `users` (
   `name` varchar(150) NOT NULL,
   `email` varchar(150) NOT NULL,
   `password` varchar(255) NOT NULL,
+  `apikey` varchar(255),
   `active` boolean default true,
   `role` int(2) default 9,
   `last_login` timestamp,
@@ -15,4 +16,4 @@ CREATE TABLE `users` (
   UNIQUE KEY (`email`)
 ) AUTO_INCREMENT=1;
 DELETE FROM `users` WHERE `email` = 'ferdiebergado@gmail.com';
-INSERT INTO `users` VALUES(null, 'ferdie bergado', 'ferdiebergado@gmail.com', '$2y$10$ihAZM76a94DSwptJkYmmsef0exvmvNcyuWtLWvf1b5YC9JViN/RBy', default, default, null, default, default);
+INSERT INTO `users` VALUES(null, 'ferdie bergado', 'ferdiebergado@gmail.com', '$2y$10$ihAZM76a94DSwptJkYmmsef0exvmvNcyuWtLWvf1b5YC9JViN/RBy', null, default, default, null, default, default);
